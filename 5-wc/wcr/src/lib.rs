@@ -1,7 +1,5 @@
 use core::fmt;
 use std::{error::Error, io::BufRead};
-use thiserror::Error;
-
 mod config;
 use config::Config;
 
@@ -9,12 +7,6 @@ mod open;
 use open::open;
 
 type MyResult<T> = Result<T, Box<dyn Error>>;
-
-#[derive(Debug, Error)]
-pub enum FileError {
-    #[error("{0}: {1}")]
-    NotFound(String, #[source] Box<dyn Error>),
-}
 
 #[derive(Debug)]
 struct FileInfo {
@@ -48,9 +40,10 @@ pub fn get_args() -> MyResult<Config> {
     Config::parse_and_normalize()
 }
 
+
 pub fn run(config: Config) -> MyResult<()> {
     let file_infos : Vec<MyResult<FileInfo>> = config.files.iter()
-        .map(|filename| -> MyResult<(&str, Box<dyn BufRead>)> { Ok((filename, open(filename).map_err(|e| FileError::NotFound(filename.to_string(), e))?)) })
+        .map(|filename| -> MyResult<(&str, Box<dyn BufRead>)> { Ok((filename, open(filename)?)) })
         .map(|file| {
         let (filename, mut file) = file?;
 
