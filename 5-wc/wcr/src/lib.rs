@@ -1,9 +1,12 @@
 use core::fmt;
-use std::{error::Error, fs::File, io::{BufRead, BufReader}};
+use std::{error::Error, io::BufRead};
 use thiserror::Error;
 
 mod config;
 use config::Config;
+
+mod open;
+use open::open;
 
 type MyResult<T> = Result<T, Box<dyn Error>>;
 
@@ -108,10 +111,4 @@ pub fn run(config: Config) -> MyResult<()> {
 }
 
 
-fn open(filename: &str) -> MyResult<Box<dyn BufRead>> {
-    match filename {
-        "-" => Ok(Box::new(BufReader::new(std::io::stdin()))),
-        _ => Ok(Box::new(BufReader::new(File::open(filename)?))),
-    }
-}
 
