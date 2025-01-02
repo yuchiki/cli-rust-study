@@ -1,7 +1,9 @@
 use core::fmt;
 use std::{error::Error, fs::File, io::{BufRead, BufReader}};
-use clap::Parser;
 use thiserror::Error;
+
+mod config;
+use config::Config;
 
 type MyResult<T> = Result<T, Box<dyn Error>>;
 
@@ -9,40 +11,6 @@ type MyResult<T> = Result<T, Box<dyn Error>>;
 pub enum FileError {
     #[error("{0}: {1}")]
     NotFound(String, #[source] Box<dyn Error>),
-}
-
-#[derive(Debug, Parser, PartialEq)]
-#[command(author, version, about, long_about=None)]
-pub struct Config {
-    #[arg(default_values_t = ["-".to_string()])]
-    files: Vec<String>,
-
-    #[arg(short='c', long)]
-    bytes: bool,
-
-    #[arg(short='m', long, conflicts_with="bytes")]
-    chars: bool,
-
-    #[arg(short, long)]
-    lines: bool,
-
-    #[arg(short, long)]
-    words: bool,
-}
-
-impl Config {
-    pub fn parse_and_normalize () -> MyResult<Config> {
-        let config = Config::try_parse()?;
-        Ok(Config::normalize(config))
-    }
-
-    fn normalize (config: Self) -> Config {
-        if [config.bytes, config.chars, config.lines, config.words].iter().all(|&x| !x) {
-            Config { bytes: true, lines: true, words: true, ..config }
-        } else {
-            config
-        }
-    }
 }
 
 #[derive(Debug)]
